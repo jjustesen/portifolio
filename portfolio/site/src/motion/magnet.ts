@@ -25,6 +25,8 @@ const TALL = 0.9;
 const EDGE_TOP = 0.08;
 const EDGE_BOTTOM = 0.92;
 const IDLE_MS = 110;
+// Touch scrolling coasts on momentum with sparse scroll events: wait longer before settling.
+const IDLE_TOUCH_MS = 220;
 
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
 
@@ -42,6 +44,10 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
   // Scroll position where the current block was last settled (or established): stepping to the
   // neighbour needs the reader to have actually scrolled that far away from it.
   let settledY = 0;
+  // A finger is on the screen: the reader is still steering, so never pull under it.
+  let touching = false;
+  // The last scroll came from a touch gesture (or its momentum).
+  let touchScroll = false;
 
   function stops(): Stop[] {
     const vh = innerHeight, maxScroll = document.documentElement.scrollHeight - vh;
@@ -119,22 +125,51 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
     pull(target);
   }
 
-  const onScroll = () => {
-    if (animating) return;
+  /** Settle only once scrolling is really at rest: momentum can still be moving between events. */
+  function settleWhenStill() {
+    if (touching) return;
+    const y = scrollY;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (touching || animating) return;
+      if (Math.abs(scrollY - y) > 0.5) schedule();
+      else settle();
+    }));
+  }
+
+  function schedule() {
     clearTimeout(idle);
-    idle = window.setTimeout(settle, IDLE_MS);
+    idle = window.setTimeout(settleWhenStill, touchScroll ? IDLE_TOUCH_MS : IDLE_MS);
+  }
+
+  const onScroll = () => {
+    if (animating || touching) return;
+    schedule();
   };
-  const onInput = () => {
+  const onInput = (e: Event) => {
     cancel();
     clearTimeout(idle);
+    if (e.type === 'touchstart' || e.type === 'touchmove') { touching = true; touchScroll = true; }
+    else if (e.type === 'wheel' || e.type === 'keydown') touchScroll = false;
   };
-  const inputs = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
+  const onTouchEnd = (e: TouchEvent) => {
+    if (e.touches.length > 0) return;
+    touching = false;
+    schedule();
+  };
+  const inputs = ['wheel', 'touchstart', 'touchmove', 'keydown', 'pointerdown'] as const;
+  const touchEnds = ['touchend', 'touchcancel'] as const;
 
   // A hidden tab stops animation frames; drop the pull instead of leaving it stuck.
-  const onVisibility = () => { if (document.hidden) onInput(); };
+  const onVisibility = () => {
+    if (!document.hidden) return;
+    cancel();
+    clearTimeout(idle);
+    touching = false;
+  };
 
   window.addEventListener('scroll', onScroll, { passive: true });
   for (const type of inputs) window.addEventListener(type, onInput, { passive: true });
+  for (const type of touchEnds) window.addEventListener(type, onTouchEnd, { passive: true });
   document.addEventListener('visibilitychange', onVisibility);
   // Establish the starting block without pulling.
   function establish() {
@@ -160,6 +195,7 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
       clearTimeout(idle);
       window.removeEventListener('scroll', onScroll);
       for (const type of inputs) window.removeEventListener(type, onInput);
+      for (const type of touchEnds) window.removeEventListener(type, onTouchEnd);
       document.removeEventListener('visibilitychange', onVisibility);
     },
   };
