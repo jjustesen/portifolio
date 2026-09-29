@@ -84,7 +84,7 @@ export const hero = {
   name: 'Johannes\nJustesen',
   role: 'Frontend Engineer',
   focus: 'AI products / Interaction / Systems',
-  tagline: 'Building interfaces for machines that think,\nstream, predict and respond.',
+  tagline: 'Interfaces between complex systems\nand human intuition.',
   meta: 'Norway / EU · Available for selected work · 6+ years',
   ctas: [
     { label: 'View selected work →', href: '#work' },
