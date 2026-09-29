@@ -99,6 +99,62 @@ button:hover,
   text-decoration: underline;
 }
 
+/* Sound toggle sits at the far right, after the section links. */
+.site-header nav {
+  order: 1;
+  margin-left: auto;
+}
+
+.header-actions {
+  order: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.sound-toggle[aria-pressed='true'] {
+  color: var(--fg);
+}
+
+.sound-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 9px;
+}
+
+.sound-bars i {
+  width: 2px;
+  height: 2px;
+  background: currentColor;
+}
+
+.sound-bars.playing i {
+  animation: sound-bar 1.8s ease-in-out infinite alternate;
+}
+
+.sound-bars.playing i:nth-child(2) {
+  animation-delay: -0.6s;
+}
+
+.sound-bars.playing i:nth-child(3) {
+  animation-delay: -1.2s;
+}
+
+@keyframes sound-bar {
+  from { height: 2px; }
+  to { height: 9px; }
+}
+
 .menu-toggle {
   display: none;
   padding: 10px 14px;
@@ -119,10 +175,14 @@ button:hover,
     background: none;
   }
 
-  .menu-toggle {
-    display: inline-block;
+  .menu-toggle,
+  .sound-toggle {
     background: rgba(8, 8, 9, 0.6);
     backdrop-filter: blur(8px);
+  }
+
+  .menu-toggle {
+    display: inline-block;
   }
 
   .site-header nav {
@@ -154,6 +214,15 @@ button:hover,
 @media (max-width: 420px) {
   .site-name-full {
     display: none;
+  }
+
+  /* Phones: the bars alone say it; the label stays for screen readers. */
+  .sound-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
   }
 }
 
@@ -477,5 +546,10 @@ main {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .sound-bars.playing i {
+    animation: none;
+    height: 6px;
   }
 }
