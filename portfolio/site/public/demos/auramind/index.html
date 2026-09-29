@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auramind screens</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 1920×1080 stage, scaled to fit. Scenes: #chat, #editor, #gallery. Add ?clean to hide the controls for recording. -->
+    <div id="viewport">
+      <div id="stage" aria-label="Auramind product recreation"></div>
+    </div>
+    <nav id="controls" aria-label="Scenes">
+      <button type="button" data-scene="chat">Chat</button>
+      <button type="button" data-scene="editor">App editor</button>
+      <button type="button" data-scene="gallery">App gallery</button>
+      <span class="sep"></span>
+      <button type="button" id="play-all">Play all</button>
+      <button type="button" id="replay">Replay ↻</button>
+      <label>Speed <select id="speed"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+    </nav>
+    <script src="app.js"></script>
+  </body>
+</html>

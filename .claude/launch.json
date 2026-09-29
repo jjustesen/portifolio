@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio-site",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "portfolio/site"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "portfolio-mockups",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [".claude/serve.py", "5500", "portfolio/mockups"],
+      "port": 5500
+    }
+  ]
+}
