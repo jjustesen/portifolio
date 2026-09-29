@@ -182,6 +182,10 @@ export function createMotionEngine(options: MotionEngineOptions): MotionEngine |
     ink.width = Math.round(w * dpr); ink.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     sizeMap.width = Math.ceil(w / 4); sizeMap.height = Math.ceil(h / 4); sctx.setTransform(0.25, 0, 0, 0.25, 0, 0);
     annotator.resize(w, h, dpr);
+    // three.js allocates texture storage once at the first upload; a canvas of a new size (the
+    // mobile address bar showing or hiding) must get fresh storage, or every upload fails and
+    // the text freezes on screen.
+    texture.dispose(); sizeTexture.dispose(); notesTexture.dispose();
     uniforms.uSize.value.set(w, h);
     measure();
   }
