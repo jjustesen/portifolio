@@ -26,9 +26,10 @@ const PROJECT_SCENE: SceneOverride = { ringGlow: 0, ringRadius: 1, chroma: 0.15,
 const SECTION_SCENES: Record<string, SceneOverride> = {
   '01': { ringRadius: 0.7, ringGlow: 2 },
   '02': { ringRadius: 0.8, ringGlow: 3 },
-  '03': { ringRadius: 0.6, ringGlow: 0.5 },
-  '04': { ringRadius: 0.7, ringGlow: 2 },
-  '05': { ringRadius: 0.75, ringGlow: 0.5 },
+  // Text-heavy sections: the ring opens wide enough to pass outside the text column.
+  '03': { ringRadius: 1.05, ringGlow: 0.5 },
+  '04': { ringRadius: 1.05, ringGlow: 2 },
+  '05': { ringRadius: 1.05, ringGlow: 0.5 },
   '06': { ringRadius: 0.2, ringGlow: 0.2 },
   '07': { ringGlow: 0.75, ringChroma: 1 },
 };

@@ -11,7 +11,8 @@ interface MagnetOptions {
 
 /** Scroll positions where a block sits in place: one for short blocks, a free range for tall ones. */
 interface Stop {
-  el: Element;
+  /** The blocks of one section: consecutive [data-magnet] elements sharing a label (e.g. the projects). */
+  els: HTMLElement[];
   label: string;
   title: string;
   min: number;
@@ -41,6 +42,7 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
   let raf = 0;
   let animating = false;
   let current = -1;
+  let focus: Element | null = null;
   // Scroll position where the current block was last settled (or established): stepping to the
   // neighbour needs the reader to have actually scrolled that far away from it.
   let settledY = 0;
@@ -52,15 +54,23 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
   function stops(): Stop[] {
     const vh = innerHeight, maxScroll = document.documentElement.scrollHeight - vh;
     const fit = (y: number) => Math.max(0, Math.min(maxScroll, y));
-    return [...document.querySelectorAll<HTMLElement>('[data-magnet]')].map((el) => {
-      const first = el.firstElementChild ?? el, last = el.lastElementChild ?? el;
+    // The magnet moves between whole sections: blocks that share a label form one stop.
+    const groups: HTMLElement[][] = [];
+    for (const el of document.querySelectorAll<HTMLElement>('[data-magnet]')) {
+      const group = groups[groups.length - 1];
+      if (group && group[0].dataset.magnet === el.dataset.magnet) group.push(el);
+      else groups.push([el]);
+    }
+    return groups.map((els) => {
+      const el = els[0], end = els[els.length - 1];
+      const first = el.firstElementChild ?? el, last = end.lastElementChild ?? end;
       const top = first.getBoundingClientRect().top + scrollY, bottom = last.getBoundingClientRect().bottom + scrollY;
       const label = el.dataset.magnet ?? '', title = el.dataset.magnetTitle ?? '';
       if (bottom - top <= vh * TALL) {
         const y = fit((top + bottom) / 2 - vh * ANCHOR);
-        return { el, label, title, min: y, max: y };
+        return { els, label, title, min: y, max: y };
       }
-      return { el, label, title, min: fit(top - vh * EDGE_TOP), max: fit(bottom - vh * EDGE_BOTTOM) };
+      return { els, label, title, min: fit(top - vh * EDGE_TOP), max: fit(bottom - vh * EDGE_BOTTOM) };
     });
   }
 
@@ -73,10 +83,24 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
     return best;
   }
 
-  function setCurrent(index: number, list: Stop[]) {
-    if (index === current) return;
+  /** The block of a stop the reader is looking at (for its margin notes), at scroll position y. */
+  function focusOf(stop: Stop, y: number) {
+    const anchor = y + innerHeight * ANCHOR;
+    let best = stop.els[0], bestDistance = Infinity;
+    for (const el of stop.els) {
+      const r = el.getBoundingClientRect(), top = r.top + scrollY, bottom = r.bottom + scrollY;
+      const distance = anchor < top ? top - anchor : anchor > bottom ? anchor - bottom : 0;
+      if (distance < bestDistance) { best = el; bestDistance = distance; }
+    }
+    return best;
+  }
+
+  function setCurrent(index: number, list: Stop[], y: number) {
+    const stop = list[index], block = focusOf(stop, y);
+    if (index === current && block === focus) return;
     current = index;
-    onSection(list[index].label, list[index].title, list[index].el);
+    focus = block;
+    onSection(stop.label, stop.title, block);
   }
 
   function cancel() {
@@ -104,7 +128,7 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
     const list = stops();
     if (list.length === 0) return;
     const y = scrollY;
-    if (current < 0 || current >= list.length) { current = nearest(list, y); settledY = y; }
+    if (current < 0 || current >= list.length) { current = nearest(list, y); focus = null; settledY = y; }
     const off = offset(list[current], y);
     const threshold = tokens.magnet * innerHeight;
     const found = nearest(list, y);
@@ -117,9 +141,9 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
       // Still nearest to the current block, but the reader scrolled past the threshold: step on.
       next = Math.max(0, Math.min(list.length - 1, current + Math.sign(off)));
     }
-    setCurrent(next, list);
     const stop = list[next];
     const target = y < stop.min ? stop.min : y > stop.max ? stop.max : y;
+    setCurrent(next, list, target);
     settledY = target;
     if (!isActive() || threshold <= 0) return;
     pull(target);
@@ -176,7 +200,7 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
     requestAnimationFrame(() => {
       const list = stops();
       if (!list.length) return;
-      setCurrent(nearest(list, scrollY), list);
+      setCurrent(nearest(list, scrollY), list, scrollY);
       settledY = scrollY;
     });
   }
@@ -188,6 +212,7 @@ export function createMagnet({ tokens, isActive, onSection }: MagnetOptions) {
       cancel();
       clearTimeout(idle);
       current = -1;
+      focus = null;
       establish();
     },
     dispose() {
