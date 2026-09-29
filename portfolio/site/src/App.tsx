@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Route, Routes, useLocation } from 'react-router';
 import { ControlPanel } from './components/ControlPanel';
+import { CursorRing } from './components/CursorRing';
 import { SiteHeader } from './components/SiteHeader';
 import { MotionContext } from './motion/context';
 import { createMotionEngine, type MotionEngine, type SceneOverride } from './motion/engine';
@@ -15,6 +16,9 @@ const SHOW_CONTROLS = import.meta.env.DEV;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const SOUND_KEY = 'sound';
 const GESTURES = ['pointerdown', 'keydown', 'touchend'] as const;
+// Hidden at least this long with the sound on: highlight the toggle for a while on return.
+const NUDGE_AFTER_MS = 30_000;
+const NUDGE_FOR_MS = 8_000;
 const readSoundPref = () => { try { return localStorage.getItem(SOUND_KEY) !== 'off'; } catch { return true; } };
 const writeSoundPref = (on: boolean) => { try { localStorage.setItem(SOUND_KEY, on ? 'on' : 'off'); } catch { /* private mode */ } };
 const PROJECT_SCENE: SceneOverride = { ringGlow: 0, ringRadius: 1, chroma: 0.15, pointer: 1, grain: 0.05 };
@@ -37,6 +41,8 @@ export function App() {
   const [sound, setSound] = useState(false);
   // Set once the visitor uses the toggle: their choice wins over the pending autoplay.
   const soundChosenRef = useRef(false);
+  // Back after a long while away with the sound still on: point out how to turn it off.
+  const [soundNudge, setSoundNudge] = useState(false);
   const tokensRef = useRef<MotionTokens>({ ...DEFAULT_TOKENS });
   const calmRef = useRef(reducedMotion.matches);
   const [webgl, setWebgl] = useState(true);
@@ -108,9 +114,31 @@ export function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!sound) return;
+    let hiddenAt = document.hidden ? performance.now() : 0;
+    let timer = 0;
+    const onVisibility = () => {
+      if (document.hidden) { hiddenAt = performance.now(); return; }
+      if (hiddenAt && performance.now() - hiddenAt >= NUDGE_AFTER_MS) {
+        setSoundNudge(true);
+        clearTimeout(timer);
+        timer = window.setTimeout(() => setSoundNudge(false), NUDGE_FOR_MS);
+      }
+      hiddenAt = 0;
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      clearTimeout(timer);
+      setSoundNudge(false);
+    };
+  }, [sound]);
+
   const toggleSound = () => {
     const ambient = ambientRef.current;
     if (!ambient) return;
+    setSoundNudge(false);
     const next = !sound;
     soundChosenRef.current = true;
     setSound(next);
@@ -140,7 +168,8 @@ export function App() {
   return (
     <MotionContext.Provider value={{ calm }}>
       <div className={webgl ? 'app webgl' : 'app'}>
-        <SiteHeader sound={sound} soundAvailable={typeof AudioContext !== 'undefined'} onSoundToggle={toggleSound} />
+        <CursorRing />
+        <SiteHeader sound={sound} soundNudge={soundNudge} soundAvailable={typeof AudioContext !== 'undefined'} onSoundToggle={toggleSound} />
         <main ref={mainRef}>
           <Routes>
             <Route path="/" element={<Home />} />

@@ -326,6 +326,17 @@ function build(spec: NoteSpec, block: Element, look: StyleLook, seed: number): D
   return d;
 }
 
+/** SVG path data for a hand-drawn arrow in the contact (grease pencil) look, for notes outside the canvas. */
+export function sketchArrow(from: Point, to: Point, seed: number, bend = 0.25): string {
+  const rng = mulberry32(seed), j = LOOKS.contact.jitter;
+  const mid: Point = [(from[0] + to[0]) / 2 + (to[1] - from[1]) * bend, (from[1] + to[1]) / 2 - (to[0] - from[0]) * bend];
+  const path = bezier(from, mid, to);
+  const toD = (pts: Point[]) => 'M' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join('L');
+  return [path, ...arrowHead(to, path[path.length - 4], 12, rng, j)].map(toD).join(' ');
+}
+
+export const NOTE_COLOR = LOOKS.contact.color;
+
 const polylineLength = (pts: Point[]) => pts.reduce((sum, p, i) => (i ? sum + Math.hypot(p[0] - pts[i - 1][0], p[1] - pts[i - 1][1]) : 0), 0);
 
 /**

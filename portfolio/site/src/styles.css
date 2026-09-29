@@ -70,6 +70,51 @@ button:hover,
   color: transparent;
 }
 
+/* Cursor ring: trails the mouse; the outer div moves, the inner ring scales. */
+.cursor-ring {
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  mix-blend-mode: difference;
+}
+
+.cursor-ring.visible {
+  opacity: 1;
+}
+
+.cursor-ring span {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.35s;
+}
+
+.cursor-ring.hover span {
+  transform: scale(1.7);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cursor-ring.pressed span {
+  transform: scale(0.8);
+}
+
+.cursor-ring.hover.pressed span {
+  transform: scale(1.4);
+}
+
+@media not ((hover: hover) and (pointer: fine)) {
+  .cursor-ring {
+    display: none;
+  }
+}
+
 /* Header */
 .site-header {
   position: fixed;
@@ -106,6 +151,7 @@ button:hover,
 }
 
 .header-actions {
+  position: relative;
   order: 2;
   display: flex;
   align-items: center;
@@ -123,6 +169,60 @@ button:hover,
 
 .sound-toggle[aria-pressed='true'] {
   color: var(--fg);
+}
+
+/* Hand-written note pointing at the toggle while it is highlighted. */
+.sound-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+/* The arrow tip sits 40px left of the note's right edge: this lands it on the button's center. */
+.sound-note {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: calc(50% - 40px);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.sound-note-arrow {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  animation: sound-note-draw 0.8s ease-out 0.45s both;
+}
+
+.sound-note-text {
+  fill: currentColor;
+  font: 400 26px Caveat, 'Comic Sans MS', cursive;
+  animation: sound-note-write 0.9s steps(18) both;
+}
+
+@keyframes sound-note-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes sound-note-write {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* Returning after a while away: the toggle glows so turning the sound off is obvious. */
+.sound-toggle.nudge {
+  color: var(--bg);
+  background: var(--fg);
+  border-color: var(--fg);
+  animation: sound-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes sound-nudge {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(240, 239, 235, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(240, 239, 235, 0); }
 }
 
 .sound-bars {
@@ -216,8 +316,8 @@ button:hover,
     display: none;
   }
 
-  /* Phones: the bars alone say it; the label stays for screen readers. */
-  .sound-label {
+  /* Phones: the bars alone say it; the label stays for screen readers (and shows in the nudge). */
+  .sound-toggle:not(.nudge) .sound-label {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -551,5 +651,11 @@ main {
   .sound-bars.playing i {
     animation: none;
     height: 6px;
+  }
+
+  .sound-toggle.nudge,
+  .sound-note-arrow,
+  .sound-note-text {
+    animation: none;
   }
 }

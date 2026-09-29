@@ -178,11 +178,10 @@ export function createAmbient(): Ambient | null {
     hiss.gain.setTargetAtTime(HISS, now + 0.25, 0.6);
   };
 
-  // A hidden tab keeps nothing playing in the background.
+  // Playback continues in a hidden tab; some browsers (iOS) still interrupt it, so pick it
+  // back up when the page is visible again.
   const onVisibility = () => {
-    if (!ctx || !playing) return;
-    if (document.hidden) void ctx.suspend();
-    else void ctx.resume();
+    if (ctx && playing && !document.hidden && ctx.state !== 'running') void ctx.resume();
   };
 
   addEventListener('scroll', onScroll, { passive: true });
