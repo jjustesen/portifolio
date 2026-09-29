@@ -11,11 +11,22 @@ export function Contact() {
         {contact.email}
       </a>
       <div className="actions">
-        {contact.links.map((link) => (
-          <a key={link.label} className="button" href={link.href}>
-            {link.label.toUpperCase()}
-          </a>
-        ))}
+        {contact.links.map((link) => {
+          // Profiles open in a new tab, like the other external links.
+          const external = link.href.startsWith('http');
+          return (
+            <a
+              key={link.label}
+              className="button"
+              href={link.href}
+              download={link.download}
+              target={external ? '_blank' : undefined}
+              rel={external ? 'noopener noreferrer' : undefined}
+            >
+              {link.label.toUpperCase()}
+            </a>
+          );
+        })}
       </div>
     </section>
   );

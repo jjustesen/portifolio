@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { Ink } from '../components/Ink';
 import { hero } from '../content/portfolio';
 
@@ -10,11 +11,19 @@ export function Hero() {
       <Ink className="lead">{hero.tagline}</Ink>
       <Ink className="label">{hero.meta}</Ink>
       <div className="actions">
-        {hero.ctas.map((cta) => (
-          <a key={cta.label} className="button" href={cta.href}>
-            {cta.label.toUpperCase()}
-          </a>
-        ))}
+        {hero.ctas.map((cta) =>
+          // Router links ("/#contact") jump like the header nav, so the magnet can't catch a
+          // section on the way down.
+          cta.href.startsWith('/') ? (
+            <Link key={cta.label} className="button" to={cta.href}>
+              {cta.label.toUpperCase()}
+            </Link>
+          ) : (
+            <a key={cta.label} className="button" href={cta.href}>
+              {cta.label.toUpperCase()}
+            </a>
+          ),
+        )}
       </div>
     </section>
   );

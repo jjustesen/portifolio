@@ -33,7 +33,7 @@ export interface MotionTokens {
 export const DEFAULT_TOKENS: MotionTokens = {
   background: 'ring',
   annotations: 'contact',
-  noteDelay: 2.4,
+  noteDelay: 1,
   ringRadius: 0.7,
   ringGlow: 2,
   caustics: 0,

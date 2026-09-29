@@ -4,6 +4,8 @@
 export interface Link {
   label: string;
   href: string;
+  /** Download the file (under this name) instead of opening it. */
+  download?: string;
 }
 
 /** A screen of the product: a still image, or a live animated demo (an HTML page in public/demos/). */
@@ -86,8 +88,7 @@ export const hero = {
   meta: 'Norway / EU · Available for selected work · 6+ years',
   ctas: [
     { label: 'View selected work →', href: '#work' },
-    // TODO: point to the real CV PDF (e.g. /cv.pdf in public/).
-    { label: 'Download CV →', href: '#' },
+    { label: 'Contact →', href: '/#contact' },
   ] satisfies Link[],
 };
 
@@ -306,9 +307,8 @@ export const contact = {
   body: 'Available for senior frontend, AI product\nand creative technology collaborations.',
   email: 'johannesjustensen99@gmail.com',
   links: [
-    // TODO: real profile URLs and CV file.
-    { label: 'LinkedIn ↗', href: '#' },
-    { label: 'GitHub ↗', href: '#' },
-    { label: 'CV PDF ↗', href: '#' },
+    { label: 'LinkedIn ↗', href: 'https://www.linkedin.com/in/jjustesen/' },
+    { label: 'GitHub ↗', href: 'https://github.com/jjustesen' },
+    { label: 'Download CV ↓', href: '/Johannes_Justesen_CV.pdf', download: 'Johannes_Justesen_CV.pdf' },
   ] satisfies Link[],
 };
