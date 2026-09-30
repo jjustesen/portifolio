@@ -132,7 +132,7 @@ const NOTES: Record<Exclude<AnnotationStyle, 'off'>, Record<string, NoteSpec[]>>
   machine: {
     intro: [
       { kind: 'detect', target: H1, label: 'person · 0.99' },
-      { kind: 'detect', target: { sel: '.hero-role' }, label: 'frontend_engineer · 0.97' },
+      { kind: 'detect', target: { sel: '.hero-role' }, label: 'software_engineer · 0.97' },
     ],
     manifesto: [{ kind: 'detect', target: { sel: 'h2', text: 'human intuition' }, label: 'human_intuition · 0.97' }],
     auramind: [

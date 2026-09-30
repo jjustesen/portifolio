@@ -8,14 +8,14 @@ Objetivo: dizer quem você é em 5 segundos.
 
 ```
 JOHANNES JUSTESEN
-Frontend Engineer
+Software Engineer
 
 AI PRODUCTS / INTERACTION / SYSTEMS
 
 Building interfaces for machines that think,
 stream, predict and respond.
 
-Norway / EU · Available for selected work · 6+ years
+Brazil / Norway / EU · Available for selected work · 6+ years
 ```
 
 CTAs:

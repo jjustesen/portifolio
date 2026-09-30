@@ -82,10 +82,10 @@ export const site = {
 
 export const hero = {
   name: 'Johannes\nJustesen',
-  role: 'Frontend Engineer',
+  role: 'Software Engineer',
   focus: 'AI products / Interaction / Systems',
   tagline: 'Interfaces between complex systems\nand human intuition.',
-  meta: 'Norway / EU · Available for selected work · 6+ years',
+  meta: 'Brazil / Norway / EU · Available for selected work · 6+ years',
   ctas: [
     { label: 'View selected work →', href: '#work' },
     { label: 'Contact →', href: '/#contact' },
